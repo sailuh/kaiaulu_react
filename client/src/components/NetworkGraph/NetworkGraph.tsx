@@ -13,10 +13,7 @@ export const NetworkGraph = () => {
                 const svg = d3.select(graphContainer.current)
                     .append("svg")
                         .attr("width", 1500)
-                        .attr("height", 1500)
-                    .append("g")
-                        .attr("transform",
-                            "translate(" + 100 + "," + 100 + ")");
+                        .attr("height",1500);
 
 
                 var link = svg.selectAll("line")
@@ -56,7 +53,6 @@ export const NetworkGraph = () => {
 
     return (
             <div id={"networkGraph"} ref={graphContainer}>
-
             </div>
     )
 

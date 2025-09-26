@@ -1,3 +1,5 @@
-.networkGraph {
-
+#networkGraph {
+    display: flex;
+    max-height: 750px;
+    max-width: 1500px;
 }
