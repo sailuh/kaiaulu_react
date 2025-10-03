@@ -1,59 +1,67 @@
-import {useEffect, useRef } from 'react';
-import * as d3 from "d3";
-import { useDummyData } from "../../hooks/useDummyData.ts";
+import { useRef, useEffect } from 'react';
 import './NetworkGraph.css';
+import * as d3 from "d3";
+import type { Link, Node } from "../../types/network-graph.types.ts";
+import type { NetworkGraphProps } from "./types.ts";
 
-export const NetworkGraph = () => {
-    const graphContainer = useRef<HTMLDivElement | null>(null);
-    const { data } = useDummyData<any>();
+export const NetworkGraph = ({ data } : NetworkGraphProps ) => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const links: Link[] = data.links.map((d) => ({ ...d }));
+    const nodes: Node[] = data.nodes.map((d) => ({ ...d }));
+
+    const width = 400;
+    const height = 400;
+    const radius = 10;
 
     useEffect(() => {
-        if (data != null) {
-            if (graphContainer.current) {
-                const svg = d3.select(graphContainer.current)
-                    .append("svg")
-                        .attr("width", 1500)
-                        .attr("height",1500);
+        const canvas = canvasRef.current;
+        const context = canvas?.getContext("2d");
 
-
-                var link = svg.selectAll("line")
-                    .data(data.links)
-                    .enter()
-                    .append("line")
-                    .style("stroke", "#aaa");
-
-                var node = svg
-                    .selectAll("circle")
-                    .data(data.nodes)
-                    .enter()
-                    .append("circle")
-                    .attr("r", 20)
-                    .style("fill", "#69b3a2");
-
-                var simulation = d3.forceSimulation(data.nodes).force("link", d3.forceLink()
-                    .id(function(d) {return d.id; }).links(data.links))
-                    .force("charge", d3.forceManyBody().strength(-400))
-                    .force("center", d3.forceCenter(750, 750))
-                    .on("end", ticked);
-
-                function ticked() {
-                    link
-                        .attr("x1", function(d) { return d.source.x; })
-                        .attr("y1", function(d) { return d.source.y; })
-                        .attr("x2", function(d) { return d.target.x; })
-                        .attr("y2", function(d) { return d.target.y; });
-
-                    node
-                        .attr("cx", function (d) { return d.x+6; })
-                        .attr("cy", function(d) { return d.y-6; });
-                }
-            }
+        if (!context) {
+            return;
         }
-    }, [data]);
+
+        // run d3-force to find the position of nodes on the canvas
+        d3.forceSimulation(nodes)
+
+            // list of forces we apply to get node positions
+            .force(
+                'link',
+                d3.forceLink<Node, Link>(links).id((d) => d.id)
+            )
+            .force('collide', d3.forceCollide().radius(radius))
+            .force('charge', d3.forceManyBody())
+            .force('center', d3.forceCenter(width / 2, height / 2))
+
+            // at each iteration of the simulation, draw the network diagram with the new node positions
+            .on('tick', () => {
+                context.clearRect(0, 0, width, height);
+
+                links.forEach((link) => {
+                    context.beginPath();
+                    context.moveTo(link.source.x, link.source.y);
+                    context.lineTo(link.target.x, link.target.y);
+                    context.stroke();
+                    context.strokeStyle = "white";
+                });
+
+                nodes.forEach((node) => {
+                    if (!node.x || !node.y) {
+                        return;
+                    }
+
+                    context.beginPath();
+                    context.moveTo(node.x + radius, node.y);
+                    context.arc(node.x, node.y, radius, 0, 2 * Math.PI);
+                    context.fillStyle = 'white';
+                    context.fill();
+                });
+            });
+    }, [nodes, links])
 
     return (
-            <div id={"networkGraph"} ref={graphContainer}>
-            </div>
+        <div id={"networkGraph"}>
+            <canvas id={"graphCanvas"} ref={canvasRef} width={400} height={400} />
+        </div>
     )
-
 }

@@ -1,3 +1,5 @@
-:root {
-  background-color: #242424;
+#root {
+    display: flex;
+    flex-direction: column;
+    background-color: #242424;
 }

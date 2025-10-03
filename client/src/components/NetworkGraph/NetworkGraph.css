@@ -1,5 +1,9 @@
 #networkGraph {
     display: flex;
-    max-height: 750px;
-    max-width: 1500px;
+    justify-content: center;
+    overflow: auto;
+}
+
+#graphCanvas {
+    display: block;
 }

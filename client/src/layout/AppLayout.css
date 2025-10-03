@@ -1,0 +1,9 @@
+#appContainer {
+    min-height: 100dvh;  /* use dvh to avoid mobile 100vh bugs */
+    width: 100vw;
+    overflow: hidden;     /* optional: hide scrollbars for full-bleed canvases */
+    display: flex;        /* if you have header/footer layout */
+    flex-direction: column;
+    background-color: black;
+    color: white;
+}
