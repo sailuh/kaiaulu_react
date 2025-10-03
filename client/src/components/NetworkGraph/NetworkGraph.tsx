@@ -12,6 +12,8 @@ export const NetworkGraph = ({ data } : NetworkGraphProps ) => {
     const width = 400;
     const height = 400;
     const radius = 10;
+    const forceStrength = -10;
+
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -22,15 +24,15 @@ export const NetworkGraph = ({ data } : NetworkGraphProps ) => {
         }
 
         // run d3-force to find the position of nodes on the canvas
-        d3.forceSimulation(nodes)
+        const simulation = d3.forceSimulation(nodes)
 
             // list of forces we apply to get node positions
             .force(
                 'link',
                 d3.forceLink<Node, Link>(links).id((d) => d.id)
             )
-            .force('collide', d3.forceCollide().radius(radius))
-            .force('charge', d3.forceManyBody())
+            .force('collide', d3.forceCollide().radius(10))
+            .force('charge', d3.forceManyBody().strength(forceStrength))
             .force('center', d3.forceCenter(width / 2, height / 2))
 
             // at each iteration of the simulation, draw the network diagram with the new node positions
@@ -38,9 +40,13 @@ export const NetworkGraph = ({ data } : NetworkGraphProps ) => {
                 context.clearRect(0, 0, width, height);
 
                 links.forEach((link) => {
+                    if (!isNode(link.source) || !isNode(link.target)) return;
+                    const s = link.source, t = link.target;
+                    if (!hasPos(s) || !hasPos(t)) return;
+
                     context.beginPath();
-                    context.moveTo(link.source.x, link.source.y);
-                    context.lineTo(link.target.x, link.target.y);
+                    context.moveTo(s.x, s.y);
+                    context.lineTo(t.x, t.y);
                     context.stroke();
                     context.strokeStyle = "white";
                 });
@@ -50,12 +56,47 @@ export const NetworkGraph = ({ data } : NetworkGraphProps ) => {
                         return;
                     }
 
+
                     context.beginPath();
                     context.moveTo(node.x + radius, node.y);
                     context.arc(node.x, node.y, radius, 0, 2 * Math.PI);
                     context.fillStyle = 'white';
                     context.fill();
+
+
                 });
+
+                const drag = d3
+                    .drag<HTMLCanvasElement, unknown>()
+                    .subject((event) => {
+                        const [x, y] = d3.pointer(event, canvas);
+
+                        // find nearest node within ~2*radius
+                        const n = simulation.find(x, y, radius * 2) as Node | undefined;
+
+                        if (n) {
+                            n.fx = n.x ?? x;
+                            n.fy = n.y ?? y;
+                        }
+
+                        return n;
+                    })
+                    .on('start', (event) => {
+                        if (!event.active) simulation.alphaTarget(0.3).restart();
+                    })
+                    .on('drag', (event) => {
+                        const n = event.subject;
+                        n.fx = event.x;
+                        n.fy = event.y;
+                    })
+                    .on('end', (event) => {
+                        if (!event.active) simulation.alphaTarget(0);
+                        const n = event.subject;
+                        n.fx = null;
+                        n.fy = null;
+                    });
+
+                d3.select(canvas).call(drag as any);
             });
     }, [nodes, links])
 
@@ -64,4 +105,12 @@ export const NetworkGraph = ({ data } : NetworkGraphProps ) => {
             <canvas id={"graphCanvas"} ref={canvasRef} width={400} height={400} />
         </div>
     )
+}
+
+function isNode(v: Link["source"]): v is Node {
+    return typeof v === "object" && v !== null;
+}
+
+function hasPos(n: Node): n is Node & { x: number; y: number } {
+    return n.x != null && n.y != null;
 }

@@ -4,6 +4,6 @@
     overflow: hidden;     /* optional: hide scrollbars for full-bleed canvases */
     display: flex;        /* if you have header/footer layout */
     flex-direction: column;
-    background-color: black;
+    background-color: #017371;
     color: white;
 }
