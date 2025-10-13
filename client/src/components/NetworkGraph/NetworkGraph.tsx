@@ -132,9 +132,17 @@ export const NetworkGraph = ({ data } : NetworkGraphProps ) => {
         context.arc(node.x, node.y, node.value * nodeRadiusMultiplier, 0, 2 * Math.PI);
         context.fill();
 
+        const px = Math.round(Math.max(10, Math.min(24, node.value * nodeRadiusMultiplier * 0.6)));
+        context.font = `${px}px Segoe UI, Roboto, sans-serif`;
         context.textAlign = "center";
         context.textBaseline = "middle";
-        context.fillStyle = '#fff';
+
+
+        context.fillStyle = 'black';
+        if (node.group == 'people' as Group) {
+            context.fillStyle = 'white';
+        }
+
         context.fillText(label, node.x, node.y);
 
     }, []);
