@@ -1,7 +1,7 @@
 #header {
+    flex: 0 0 15%;
     font-size: 50px;
     justify-content: center;
-    min-height: 15dvh;
     display: flex;
     align-items: center;
 }

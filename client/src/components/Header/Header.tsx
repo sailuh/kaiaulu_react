@@ -4,7 +4,6 @@ export const Header = () => {
     return (
         <>
             <div id={"header"}>
-                Kaiāulu
             </div>
         </>
     )

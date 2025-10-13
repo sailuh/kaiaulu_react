@@ -1,9 +1,10 @@
 #networkGraph {
     display: flex;
+    flex: 1;
     justify-content: center;
     overflow: auto;
 }
 
 #graphCanvas {
-    display: block;
+    flex: 1;
 }

@@ -6,7 +6,7 @@ const AppLayout = () => {
     return (
         <div id={"appContainer"}>
             <Header />
-                <Outlet />
+            <Outlet />
         </div>
     )
 }
