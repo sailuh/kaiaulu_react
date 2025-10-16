@@ -1,5 +1,5 @@
-import { NetworkGraph} from "../components/NetworkGraph";
-import { data } from "../data/dummy-data.ts";
+import { NetworkGraph } from "../../features/NetworkGraph";
+import { data } from "../../data/dummy-data.ts";
 
 const Landing = () => {
     return (

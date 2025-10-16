@@ -1,3 +1,5 @@
+import type {NetworkGraphData} from "../types/network-graph.types.ts";
+
 export const data = {
     nodes: [
         { id: 'person_1', group: 'people', value: 2},
@@ -78,4 +80,4 @@ export const data = {
         { source: 'file_23', target: 'issue_1', value: 4},
         { source: 'file_23', target: 'file_24', value: 4},
     ],
-};
+} as NetworkGraphData;

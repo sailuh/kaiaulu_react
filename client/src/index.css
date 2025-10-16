@@ -1,5 +1,8 @@
-#root {
-    display: flex;
-    flex-direction: column;
-    background-color: #242424;
+html, body, #root {
+    height: 100%;
+}
+
+html, body {
+    margin: 0;          /* kills the 8px white border */
+    padding: 0;
 }

@@ -1,8 +1,0 @@
-html, body, #root {
-    height: 100%;
-}
-
-html, body {
-    margin: 0;          /* kills the 8px white border */
-    padding: 0;
-}
