@@ -1,3 +1,7 @@
+# --- JetBrains / IntelliJ ---
+.idea/
+.idea/*
+
 # Logs
 logs
 *.log
