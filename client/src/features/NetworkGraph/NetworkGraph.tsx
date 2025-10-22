@@ -49,7 +49,6 @@ export const NetworkGraph = () => {
         const links: Link[] = data.links.map((d) => ({ ...d }));
         const nodes: Node[] = data.nodes.map((d) => ({ ...d }));
 
-
         const resize = () => {
             if (!container) return;
             const rect = container.getBoundingClientRect();
@@ -107,13 +106,13 @@ export const NetworkGraph = () => {
                     context.fillStyle = 'black';
                     break;
                 case "mail":
-                    context.fillStyle = 'LightBlue';
+                    context.fillStyle = '#add8e6';
                     break;
                 case 'file':
-                    context.fillStyle = 'yellow';
+                    context.fillStyle = '#fafad2';
                     break;
                 case 'issue':
-                    context.fillStyle = 'blue';
+                    context.fillStyle = '#0052cc';
             }
 
             const label = (node as Node).id ?? node.id ?? "";
