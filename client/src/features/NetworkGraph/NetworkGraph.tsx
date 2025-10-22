@@ -1,68 +1,25 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect } from 'react';
+import { useDummyData } from "../../hooks/useDummyData.ts";
 import './NetworkGraph.css';
-import {
-    forceX,
-    forceY,
-    forceSimulation,
-    select,
-    drag,
-    pointer,
-    forceCollide,
-    forceManyBody,
-    forceLink
+
+import { forceX, forceY, forceSimulation, select, drag, pointer, forceCollide, forceManyBody,
+    forceLink,
+    type DragBehavior
 } from "d3";
+
 import type { Simulation } from "d3";
-import type { Link, Node, Group } from "../../types/network-graph.types.ts";
-import type { NetworkGraphProps } from "./types.ts";
+import type { Link, Node, Group, HubLink } from "../../types/network-graph.types.ts";
 
-export const NetworkGraph = ({ data } : NetworkGraphProps ) => {
+export const NetworkGraph = () => {
+    const { data } = useDummyData();
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const simulationRef = useRef<Simulation<Node, Link>>(null);
 
-    const links: Link[] = data.links.map((d) => ({ ...d }));
-    const nodes: Node[] = data.nodes.map((d) => ({ ...d }));
-
-
-    // Hub nodes that serve as the center of each group, determined by size of the node
-    const hubs: Record<Group, Node> = {
-        people: nodes.filter(n => n.group === 'people').reduce((a,b)=> a.value>b.value?a:b),
-        mail:   nodes.filter(n => n.group === 'mail').reduce((a,b)=> a.value>b.value?a:b),
-        file:   nodes.filter(n => n.group === 'file').reduce((a,b)=> a.value>b.value?a:b),
-        issue:  nodes.filter(n => n.group === 'issue').reduce((a,b)=> a.value>b.value?a:b),
-    };
-
-    // Helper for determining hub nodes
-    const isHub = useCallback((d: Node) => hubs[d.group] === d, []);
-
-    type HubLink = { source: Node; target: Node };
-    const hubLinks: HubLink[] = nodes
-        .filter(n => !isHub(n))
-        .map(n => ({ source: hubs[n.group], target: n }));
-
-    const radius = 40;
-    const forceStrength = -100;
-    const nodeRadiusMultiplier = 11;
-    const nodePadding = 6;
-
-    // Helper that takes canvas width and height and returns center coordinate for each group
     const centers = (w: number, h: number) => ({
         people: [w * 0.5, h * 0.4],
         mail:   [w * 0.8, h * 0.3],
         file:   [w * 0.25, h * 0.4],
         issue:  [w * 0.8, h * 0.6],
     });
-
-    // Initialize force simulation with nodes and links
-    if (!simulationRef.current) {
-        simulationRef.current = forceSimulation(nodes)
-            .force('link', forceLink<Node, Link>(links).id((d) => d.id)
-                .distance(80)          // tighter cluster around hub
-                .strength(0.05))         // stronger pull to the hub)
-            .force('hubLinks', forceLink<Node, HubLink>(hubLinks)
-                .distance(40)          // tighter cluster around hub
-                .strength(0.2)         // stronger pull to the hub
-        );
-    }
 
     // Helper function for clearing forces
     function clearForces(sim: Simulation<Node, Link>) {
@@ -76,121 +33,146 @@ export const NetworkGraph = ({ data } : NetworkGraphProps ) => {
             .velocityDecay(1); // stop inertia
     }
 
-    // Function for drawing the network graph that is called on each tick of the simulation
-    const drawGraph = useCallback((context: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        if (!simulationRef.current) return;
-
-        links.forEach((link) => {
-            if (!isNode(link.source) || !isNode(link.target)) return;
-            console.log("this link has a source and target");
-
-            const s = link.source, t = link.target;
-            if (!hasPos(s) || !hasPos(t)) return;
-
-            console.log(s);
-            console.log(t);
-
-            context.beginPath();
-            context.moveTo(s.x, s.y);
-            context.lineTo(t.x, t.y);
-            context.stroke();
-            context.strokeStyle = "grey";
-        });
-
-        nodes.forEach((node) => {
-            drawNodeByGroup(node, context);
-        })
-
-    }, []);
-
-    // Helper function for drawing a single node based on its group
-    const drawNodeByGroup = useCallback((node: Node, context: CanvasRenderingContext2D) => {
-        if (!node.x || !node.y) {
-            return;
-        }
-
-        switch (node.group) {
-            case "people":
-                context.fillStyle = 'black';
-                break;
-            case "mail":
-                context.fillStyle = 'LightBlue';
-                break;
-            case 'file':
-                context.fillStyle = 'yellow';
-                break;
-            case 'issue':
-                context.fillStyle = 'blue';
-        }
-
-        const label = (node as Node).id ?? node.id ?? "";
-        if (!label) return;
-
-        context.beginPath();
-        context.moveTo(node.x + radius, node.y);
-        context.arc(node.x, node.y, node.value * nodeRadiusMultiplier, 0, 2 * Math.PI);
-        context.fill();
-
-        const px = Math.round(Math.max(10, Math.min(24, node.value * nodeRadiusMultiplier * 0.6)));
-        context.font = `${px}px Segoe UI, Roboto, sans-serif`;
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-
-
-        context.fillStyle = 'black';
-        if (node.group == 'people' as Group) {
-            context.fillStyle = 'white';
-        }
-
-        context.fillText(label, node.x, node.y);
-
-    }, []);
-
-
     // Apply forces for simulation
     useEffect(() => {
-        if (!simulationRef.current || !canvasRef.current) return;
+        const radius = 40;
+        const forceStrength = -100;
+        const nodeRadiusMultiplier = 11;
+        const nodePadding = 6;
+
+        if (!canvasRef.current) return;
 
         const canvas = canvasRef.current;
         const container = canvas.parentElement;
-        if (!container) return;
+        const c = centers(canvas.width, canvas.height);
 
-        const context = canvas.getContext("2d");
-        if (!context) return;
+        const links: Link[] = data.links.map((d) => ({ ...d }));
+        const nodes: Node[] = data.nodes.map((d) => ({ ...d }));
+
 
         const resize = () => {
+            if (!container) return;
             const rect = container.getBoundingClientRect();
             canvas.width = rect.width;
             canvas.height = rect.height;
         };
         resize();
+        
+        // Hub nodes that serve as the center of each group, determined by size of the node
+        const hubs: Record<Group, Node> = {
+            people: nodes.filter(n => n.group === 'people').reduce((a,b)=> a.value>b.value?a:b),
+            mail:   nodes.filter(n => n.group === 'mail').reduce((a,b)=> a.value>b.value?a:b),
+            file:   nodes.filter(n => n.group === 'file').reduce((a,b)=> a.value>b.value?a:b),
+            issue:  nodes.filter(n => n.group === 'issue').reduce((a,b)=> a.value>b.value?a:b),
+        };
 
-        const c = centers(canvas.width, canvas.height);
+        // Helper for determining hub nodes
+        const isHub = (d: Node) => hubs[d.group] === d;
 
-        simulationRef.current
+        const hubLinks: HubLink[] = nodes
+            .filter(n => !isHub(n))
+            .map(n => ({ source: hubs[n.group], target: n }));
+        
+        const physicsSimulation = forceSimulation(nodes)
+            .force('link', forceLink<Node, Link>(links).id((d) => d.id)
+                .distance(80)          // tighter cluster around hub
+                .strength(0.05))         // stronger pull to the hub)
+            .force('hubLinks', forceLink<Node, HubLink>(hubLinks)
+                .distance(40)          // tighter cluster around hub
+                .strength(0.2)         // stronger pull to the hub
+            )
             .force("x", forceX<Node>(d => c[d.group][0]).strength(0.2))
             .force("y", forceY<Node>(d => c[d.group][1]).strength(0.2))
             .force('collide', forceCollide<Node>().radius(d => d.value * nodeRadiusMultiplier + nodePadding))
             .force('charge', forceManyBody().strength(forceStrength));
 
-        simulationRef.current.alpha(1);
-        for (let i = 0; i < 300; i++) simulationRef.current.tick();
+        console.log("Simulation established");
 
+        physicsSimulation.alpha(1);
+        for (let i = 0; i < 300; i++) physicsSimulation.tick();
+        clearForces(physicsSimulation);
+        physicsSimulation.stop();
+
+        const context = canvas.getContext("2d");
+        if (!context) return;
+
+        // Helper function for drawing a single node based on its group
+        const drawNodeByGroup = (node: Node, context: CanvasRenderingContext2D) => {
+            if (!node.x || !node.y) {
+                return;
+            }
+
+            switch (node.group) {
+                case "people":
+                    context.fillStyle = 'black';
+                    break;
+                case "mail":
+                    context.fillStyle = 'LightBlue';
+                    break;
+                case 'file':
+                    context.fillStyle = 'yellow';
+                    break;
+                case 'issue':
+                    context.fillStyle = 'blue';
+            }
+
+            const label = (node as Node).id ?? node.id ?? "";
+            if (!label) return;
+
+            context.beginPath();
+            context.moveTo(node.x + radius, node.y);
+            context.arc(node.x, node.y, node.value * nodeRadiusMultiplier, 0, 2 * Math.PI);
+            context.fill();
+
+            const px = Math.round(Math.max(10, Math.min(24, node.value * nodeRadiusMultiplier * 0.6)));
+            context.font = `${px}px Segoe UI, Roboto, sans-serif`;
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+
+
+            context.fillStyle = 'black';
+            if (node.group == 'people' as Group) {
+                context.fillStyle = 'white';
+            }
+
+            context.fillText(label, node.x, node.y);
+
+        };
+
+        // Function for drawing the network graph that is called on each tick of the simulation
+        const drawGraph = (context: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            links.forEach((link) => {
+                if (!isNode(link.source) || !isNode(link.target)) return;
+                console.log("this link has a source and target");
+
+                const s = link.source, t = link.target;
+                if (!hasPos(s) || !hasPos(t)) return;
+
+                console.log(s);
+                console.log(t);
+
+                context.beginPath();
+                context.moveTo(s.x, s.y);
+                context.lineTo(t.x, t.y);
+                context.stroke();
+                context.strokeStyle = "grey";
+            });
+
+            nodes.forEach((node) => {
+                drawNodeByGroup(node, context);
+            })
+
+        };
         drawGraph(context, canvas);
-        clearForces(simulationRef.current);
-
-        simulationRef.current.on("tick", null);
-        simulationRef.current.stop();
-
 
         const dragBehavior = drag<HTMLCanvasElement, unknown>()
             .subject((event) => {
                 const [x, y] = pointer(event, canvas);
-                if (!simulationRef.current) return;
 
                 // find nearest node within ~2*radius
-                const n = simulationRef.current.find(x, y, radius) as Node | undefined;
+                const n = physicsSimulation.find(x, y, radius) as Node | undefined;
 
                 if (n) {
                     n.fx = n.x ?? x;
@@ -200,23 +182,24 @@ export const NetworkGraph = ({ data } : NetworkGraphProps ) => {
                 return n;
             })
             .on('drag', (event) => {
-                if (!simulationRef.current) return;
                 const n = event.subject;
                 n.x = event.x;
                 n.y = event.y;
                 drawGraph(context, canvas);
             });
 
-        select(canvas).call(dragBehavior as any);
+        select(canvas).call(dragBehavior as DragBehavior<HTMLCanvasElement, unknown, unknown>);
 
         const ro = new ResizeObserver(() => {
             resize();
             drawGraph(context, canvas);
         })
 
+        if (!container) return;
         ro.observe(container);
         return () => ro.disconnect();
-    }, [canvasRef, simulationRef]);
+
+    }, [data]);
 
     return (
         <canvas id={"graphCanvas"} ref={canvasRef}/>

@@ -16,3 +16,11 @@ export type NetworkGraphData = {
 };
 
 export type Group = 'people' | 'mail' | 'file' | 'issue';
+
+export type NetworkGraphProps = {
+    data: NetworkGraphData;
+};
+
+export type HubLink = {
+    source: Node; target: Node
+};
