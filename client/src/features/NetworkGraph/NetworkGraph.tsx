@@ -49,6 +49,12 @@ export const NetworkGraph = () => {
         const links: Link[] = data.links.map((d) => ({ ...d }));
         const nodes: Node[] = data.nodes.map((d) => ({ ...d }));
 
+        const nodeHighlightMap = new Map();
+
+        data.nodes.forEach((p) => {
+           nodeHighlightMap.set(p.id, { highlightStatus: 0 });
+        });
+
         const resize = () => {
             if (!container) return;
             const rect = container.getBoundingClientRect();
@@ -65,13 +71,14 @@ export const NetworkGraph = () => {
             issue:  nodes.filter(n => n.group === 'issue').reduce((a,b)=> a.value>b.value?a:b),
         };
 
-        // Helper for determining hub nodes
+        // Helper for determining if a node is a hub node
         const isHub = (d: Node) => hubs[d.group] === d;
 
         const hubLinks: HubLink[] = nodes
             .filter(n => !isHub(n))
             .map(n => ({ source: hubs[n.group], target: n }));
 
+        // Initialize forces for physics simulation
         const physicsSimulation = forceSimulation(nodes)
             .force('link', forceLink<Node, Link>(links).id((d) => d.id)
                 .distance(80)          // tighter cluster around hub
@@ -85,21 +92,23 @@ export const NetworkGraph = () => {
             .force('collide', forceCollide<Node>().radius(d => d.value * nodeRadiusMultiplier + nodePadding))
             .force('charge', forceManyBody().strength(forceStrength));
 
-
+        // Reset the simulation
         physicsSimulation.alpha(1);
+
+        // Run the simulation for some time and then stop it
         for (let i = 0; i < 300; i++) physicsSimulation.tick();
         clearForces(physicsSimulation);
         physicsSimulation.stop();
 
+        // Grab context (used for drawing) from canvas
         const context = canvas.getContext("2d");
         if (!context) return;
 
         // Helper function for drawing a single node based on its group
         const drawNodeByGroup = (node: Node, context: CanvasRenderingContext2D) => {
-            if (!node.x || !node.y) {
-                return;
-            }
+            if (!hasPos(node)) return;
 
+            // Sets color of node according to group
             switch (node.group) {
                 case "people":
                     context.fillStyle = 'black';
@@ -114,27 +123,38 @@ export const NetworkGraph = () => {
                     context.fillStyle = '#0052cc';
             }
 
+
+            // Creates a text label for the node
             const label = (node as Node).id ?? node.id ?? "";
             if (!label) return;
+
+            // Draws the node
+            context.save();
+            if (nodeHighlightMap.get(node.id).highlightStatus == -1) {
+                context.globalAlpha = 0.2;
+            }
 
             context.beginPath();
             context.moveTo(node.x + radius, node.y);
             context.arc(node.x, node.y, node.value * nodeRadiusMultiplier, 0, 2 * Math.PI);
             context.fill();
 
+
+            // Set text attributes
             const px = Math.round(Math.max(10, Math.min(24, node.value * nodeRadiusMultiplier * 0.6)));
             context.font = `${px}px Roboto, sans-serif`;
             context.textAlign = "center";
             context.textBaseline = "middle";
-
-
             context.fillStyle = 'black';
+
+            // If the node is of group people, then set text color to white (to contrast the black node)
             if (node.group == 'people' as Group) {
                 context.fillStyle = 'white';
             }
 
+            // Draws the text
             context.fillText(label, node.x, node.y);
-
+            context.restore();
         };
 
         // Function for drawing the network graph
@@ -162,11 +182,26 @@ export const NetworkGraph = () => {
 
         drawGraph(context, canvas);
 
+        // Finds the topmost node under (x,y)
+        const findNodeAt = (x: number, y: number): Node | undefined => {
+            // iterate in reverse draw order so on top wins
+            for (let i = nodes.length - 1; i >= 0; i--) {
+                const n = nodes[i];
+                if (!hasPos(n)) continue;
+                const r = n.value * nodeRadiusMultiplier;
+                const dx = x - n.x!;
+                const dy = y - n.y!;
+                if (dx*dx + dy*dy <= r*r) return n;
+            }
+            return undefined;
+        };
+
         const dragBehavior = drag<HTMLCanvasElement, unknown>()
             .subject((event) => {
                 const [x, y] = pointer(event, canvas);
-                // find nearest node within ~2*radius
-                const n = physicsSimulation.find(x, y, radius) as Node | undefined;
+
+                // find nearest node within radius
+                const n = findNodeAt(x, y);
 
                 if (n) {
                     n.fx = n.x ?? x;
@@ -184,30 +219,29 @@ export const NetworkGraph = () => {
 
         select(canvas).call(dragBehavior as DragBehavior<HTMLCanvasElement, unknown, unknown>);
 
-
-        // Finds the topmost node under (x,y)
-        const findNodeAt = (x: number, y: number): Node | undefined => {
-            // iterate in reverse draw order so on top wins
-            for (let i = nodes.length - 1; i >= 0; i--) {
-                const n = nodes[i];
-                if (!hasPos(n)) continue;
-                const r = n.value * nodeRadiusMultiplier;
-                const dx = x - n.x!;
-                const dy = y - n.y!;
-                if (dx*dx + dy*dy <= r*r) return n;
-            }
-            return undefined;
-        };
-
         // Double-click handler
         const onNodeDoubleClick = (node: Node) => {
             if (!hasPos(node)) return;
-            context.fillStyle = 'green';
-            context.beginPath();
-            context.moveTo(node.x + radius, node.y);
-            context.arc(node.x, node.y, node.value * nodeRadiusMultiplier, 0, 2 * Math.PI);
-            context.fill();
+            const selectedNode = nodeHighlightMap.get(node.id);
+            if (selectedNode.highlightStatus == 0) {
+                selectedNode.highlightStatus = 1;
+                for (const [key, value] of nodeHighlightMap) {
+                    if (key != node.id) {
+                        value.highlightStatus = -1;
+                    }
+                }
+            } else if (selectedNode.highlightStatus == 1) {
+                selectedNode.highlightStatus = 0;
+                for (const [key, value] of nodeHighlightMap) {
+                    if (key != node.id) {
+                        value.highlightStatus = 0;
+                    }
+                }
+            }
+
+            drawGraph(context, canvas);
         };
+
 
         // Double-click listener
         const handleDblClick = (event: MouseEvent) => {
