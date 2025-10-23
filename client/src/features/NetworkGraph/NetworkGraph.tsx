@@ -56,7 +56,7 @@ export const NetworkGraph = () => {
             canvas.height = rect.height;
         };
         resize();
-        
+
         // Hub nodes that serve as the center of each group, determined by size of the node
         const hubs: Record<Group, Node> = {
             people: nodes.filter(n => n.group === 'people').reduce((a,b)=> a.value>b.value?a:b),
@@ -71,11 +71,11 @@ export const NetworkGraph = () => {
         const hubLinks: HubLink[] = nodes
             .filter(n => !isHub(n))
             .map(n => ({ source: hubs[n.group], target: n }));
-        
+
         const physicsSimulation = forceSimulation(nodes)
             .force('link', forceLink<Node, Link>(links).id((d) => d.id)
                 .distance(80)          // tighter cluster around hub
-                .strength(0.05))         // stronger pull to the hub)
+                .strength(0.05))         // stronger pull to the hub
             .force('hubLinks', forceLink<Node, HubLink>(hubLinks)
                 .distance(40)          // tighter cluster around hub
                 .strength(0.2)         // stronger pull to the hub
@@ -85,7 +85,6 @@ export const NetworkGraph = () => {
             .force('collide', forceCollide<Node>().radius(d => d.value * nodeRadiusMultiplier + nodePadding))
             .force('charge', forceManyBody().strength(forceStrength));
 
-        console.log("Simulation established");
 
         physicsSimulation.alpha(1);
         for (let i = 0; i < 300; i++) physicsSimulation.tick();
@@ -124,7 +123,7 @@ export const NetworkGraph = () => {
             context.fill();
 
             const px = Math.round(Math.max(10, Math.min(24, node.value * nodeRadiusMultiplier * 0.6)));
-            context.font = `${px}px Segoe UI, Roboto, sans-serif`;
+            context.font = `${px}px Roboto, sans-serif`;
             context.textAlign = "center";
             context.textBaseline = "middle";
 
@@ -138,19 +137,15 @@ export const NetworkGraph = () => {
 
         };
 
-        // Function for drawing the network graph that is called on each tick of the simulation
+        // Function for drawing the network graph
         const drawGraph = (context: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
             context.clearRect(0, 0, canvas.width, canvas.height);
 
             links.forEach((link) => {
                 if (!isNode(link.source) || !isNode(link.target)) return;
-                console.log("this link has a source and target");
 
                 const s = link.source, t = link.target;
                 if (!hasPos(s) || !hasPos(t)) return;
-
-                console.log(s);
-                console.log(t);
 
                 context.beginPath();
                 context.moveTo(s.x, s.y);
@@ -164,12 +159,12 @@ export const NetworkGraph = () => {
             })
 
         };
+
         drawGraph(context, canvas);
 
         const dragBehavior = drag<HTMLCanvasElement, unknown>()
             .subject((event) => {
                 const [x, y] = pointer(event, canvas);
-
                 // find nearest node within ~2*radius
                 const n = physicsSimulation.find(x, y, radius) as Node | undefined;
 
@@ -188,6 +183,42 @@ export const NetworkGraph = () => {
             });
 
         select(canvas).call(dragBehavior as DragBehavior<HTMLCanvasElement, unknown, unknown>);
+
+
+        // Finds the topmost node under (x,y)
+        const findNodeAt = (x: number, y: number): Node | undefined => {
+            // iterate in reverse draw order so on top wins
+            for (let i = nodes.length - 1; i >= 0; i--) {
+                const n = nodes[i];
+                if (!hasPos(n)) continue;
+                const r = n.value * nodeRadiusMultiplier;
+                const dx = x - n.x!;
+                const dy = y - n.y!;
+                if (dx*dx + dy*dy <= r*r) return n;
+            }
+            return undefined;
+        };
+
+        // Double-click handler
+        const onNodeDoubleClick = (node: Node) => {
+            if (!hasPos(node)) return;
+            context.fillStyle = 'green';
+            context.beginPath();
+            context.moveTo(node.x + radius, node.y);
+            context.arc(node.x, node.y, node.value * nodeRadiusMultiplier, 0, 2 * Math.PI);
+            context.fill();
+        };
+
+        // Double-click listener
+        const handleDblClick = (event: MouseEvent) => {
+            event.preventDefault();
+            const [x, y] = pointer(event, canvas);
+            const hit = findNodeAt(x, y);
+            if (hit) onNodeDoubleClick(hit);
+        };
+
+        // Attach double-click listener to canvas
+        select(canvas).on('dblclick', handleDblClick);
 
         const ro = new ResizeObserver(() => {
             resize();
