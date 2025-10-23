@@ -1,4 +1,4 @@
-import type {NetworkGraphData} from "../types/network-graph.types.ts";
+import type { NetworkGraphData } from "../types/network-graph.types.ts";
 
 export const data = {
     nodes: [
