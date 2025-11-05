@@ -11,10 +11,11 @@ import type { Simulation } from "d3";
 import type { Link, Node, Group, HubLink } from "../../types/network-graph.types.ts";
 
 export const NetworkGraph = () => {
-    const { data } = useDummyData();
+    const data = useDummyData();
+
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    const centers = (w: number, h: number) => ({
+    const nodeGroupCenters = (w: number, h: number) => ({
         people: [w * 0.5, h * 0.4],
         mail:   [w * 0.8, h * 0.3],
         file:   [w * 0.25, h * 0.4],
@@ -44,15 +45,38 @@ export const NetworkGraph = () => {
 
         const canvas = canvasRef.current;
         const container = canvas.parentElement;
-        const c = centers(canvas.width, canvas.height);
+        const c = nodeGroupCenters(canvas.width, canvas.height);
 
-        const links: Link[] = data.links.map((d) => ({ ...d }));
-        const nodes: Node[] = data.nodes.map((d) => ({ ...d }));
+        const links : Link[] = [] as Link[];
+        const nodes: Node[] = [] as Node[];
 
-        const nodeHighlightMap = new Map();
+        for (const [key, value] of Object.entries(data)) {
+            links.push(... value.links);
+            nodes.push(... value.nodes);
+        }
 
-        data.nodes.forEach((p) => {
-           nodeHighlightMap.set(p.id, { highlightStatus: 0 });
+        const nodeRelationshipMap = new Map<Node, Set<Node>>()
+        nodes.forEach((node) => {
+            nodeRelationshipMap.set(node, new Set<Node>);
+            links.forEach((link) => {
+                if (link.source == node) {
+                    const relationshipSet = nodeRelationshipMap.get(node);
+                    if (relationshipSet) {
+                        relationshipSet.add(link.target);
+                    }
+                } else if (link.target == node) {
+                    const relationshipSet = nodeRelationshipMap.get(node);
+                    if (relationshipSet) {
+                        relationshipSet.add(link.source);
+                    }
+                }
+            })
+        });
+
+        const transparentNodeMap = new Map<Node, number>();
+
+        nodes.forEach((node) => {
+            transparentNodeMap.set(node, 0);
         });
 
         const resize = () => {
@@ -81,8 +105,8 @@ export const NetworkGraph = () => {
         // Initialize forces for physics simulation
         const physicsSimulation = forceSimulation(nodes)
             .force('link', forceLink<Node, Link>(links).id((d) => d.id)
-                .distance(80)          // tighter cluster around hub
-                .strength(0.05))         // stronger pull to the hub
+                .distance(80)
+                .strength(0.05))
             .force('hubLinks', forceLink<Node, HubLink>(hubLinks)
                 .distance(40)          // tighter cluster around hub
                 .strength(0.2)         // stronger pull to the hub
@@ -105,7 +129,7 @@ export const NetworkGraph = () => {
         if (!context) return;
 
         // Helper function for drawing a single node based on its group
-        const drawNodeByGroup = (node: Node, context: CanvasRenderingContext2D) => {
+        const  drawNodeByGroup = (node: Node, context: CanvasRenderingContext2D) => {
             if (!hasPos(node)) return;
 
             // Sets color of node according to group
@@ -130,7 +154,7 @@ export const NetworkGraph = () => {
 
             // Draws the node
             context.save();
-            if (nodeHighlightMap.get(node.id).highlightStatus == -1) {
+            if (transparentNodeMap.get(node) == 1) {
                 context.globalAlpha = 0.2;
             }
 
@@ -219,26 +243,30 @@ export const NetworkGraph = () => {
 
         select(canvas).call(dragBehavior as DragBehavior<HTMLCanvasElement, unknown, unknown>);
 
-        // Double-click handler
-        const onNodeDoubleClick = (node: Node) => {
+        const setNodeTransparentValue = (node: Node) => {
             if (!hasPos(node)) return;
-            const selectedNode = nodeHighlightMap.get(node.id);
-            if (selectedNode.highlightStatus == 0) {
-                selectedNode.highlightStatus = 1;
-                for (const [key, value] of nodeHighlightMap) {
-                    if (key != node.id) {
-                        value.highlightStatus = -1;
-                    }
-                }
-            } else if (selectedNode.highlightStatus == 1) {
-                selectedNode.highlightStatus = 0;
-                for (const [key, value] of nodeHighlightMap) {
-                    if (key != node.id) {
-                        value.highlightStatus = 0;
-                    }
+
+            console.log(node.id);
+
+            const isTransparent = transparentNodeMap.get(node);
+
+            if (isTransparent == 0) {
+                for (const key of transparentNodeMap.keys()) transparentNodeMap.set(key, 1);
+                transparentNodeMap.set(node, 0);
+                const relatedNodeSet = nodeRelationshipMap.get(node);
+                if (relatedNodeSet) {
+                    relatedNodeSet.forEach((node) => {
+                        transparentNodeMap.set(node, 0);
+                    });
                 }
             }
 
+        }
+
+        // Double-click handler
+        const onNodeDoubleClick = (node: Node) => {
+            console.log(nodeRelationshipMap.get(node));
+            setNodeTransparentValue(node);
             drawGraph(context, canvas);
         };
 

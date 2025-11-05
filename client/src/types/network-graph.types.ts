@@ -7,6 +7,8 @@ export interface Node extends SimulationNodeDatum {
 }
 
 export type Link = SimulationLinkDatum<Node> & {
+    source: Node;
+    target: Node;
     value: number;
 };
 
