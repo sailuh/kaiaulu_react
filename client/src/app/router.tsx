@@ -2,6 +2,7 @@ import { QueryClient, useQueryClient } from '@tanstack/react-query';
 import {createBrowserRouter, RouterProvider } from "react-router-dom";
 import { paths } from '../config/paths.ts';
 import { useMemo } from "react";
+import AppLayout from "../components/layouts/AppLayout.tsx";
 
 const convert = (queryClient: QueryClient) => (m: any) => {
     const { clientLoader, clientAction, default: Component, ...rest } = m;
@@ -16,9 +17,16 @@ const convert = (queryClient: QueryClient) => (m: any) => {
 export const createAppRouter = (queryClient: QueryClient) =>
     createBrowserRouter([
         {
-            path: paths.home.path,
-            lazy: () => import('./routes/landing').then(convert(queryClient)),
-        }
+            // Layout route
+            element: <AppLayout />,
+            children: [
+                {
+                    path: paths.home.path,
+                    lazy: () => import('./routes/landing').then(convert(queryClient)),
+                },
+                // add more child routes here later
+            ],
+        },
     ]);
 
 export const AppRouter = () => {

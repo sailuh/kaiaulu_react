@@ -4,5 +4,10 @@ import { issueDummyData } from "../data/issue-dummy-data.ts";
 import { fileDummyData } from "../data/file-dummy-data.ts";
 
 export function useDummyData() {
-    return { personData: personDummyData, mailData: mailDummyData, issueData: issueDummyData, fileData: fileDummyData };
+    return {
+        personData: personDummyData,
+        mailData: mailDummyData,
+        issueData: issueDummyData,
+        fileData: fileDummyData
+    };
 }

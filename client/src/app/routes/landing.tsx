@@ -1,9 +1,15 @@
-import { NetworkGraph } from "../../features/NetworkGraph";
-import { data } from "../../data/dummy-data.ts";
+import { NetworkGraphProvider } from "../../features/NetworkGraph/NetworkGraphProvider.tsx";
+import { NetworkGraph } from "../../features/NetworkGraph/NetworkGraph.tsx";
+import { NetworkGraphToolbar } from "../../features/NetworkGraph/NetworkGraphToolbar.tsx";
 
 const Landing = () => {
     return (
-            <NetworkGraph data={data}/>
+        <>
+            <NetworkGraphProvider>
+                <NetworkGraphToolbar/>
+                <NetworkGraph/>
+            </NetworkGraphProvider>
+        </>
     )
 }
 

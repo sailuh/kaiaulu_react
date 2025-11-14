@@ -2,14 +2,14 @@ import type { SimulationNodeDatum, SimulationLinkDatum } from "d3";
 
 export interface Node extends SimulationNodeDatum {
     id: string;
-    group: Group;
-    value: number;
+    group: Group;   // added property
+    value: number;  // added property
 }
 
 export type Link = SimulationLinkDatum<Node> & {
     source: Node;
     target: Node;
-    value: number;
+    value: number;  // added property
 };
 
 export type NetworkGraphData = {

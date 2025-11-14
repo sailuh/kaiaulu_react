@@ -1,5 +1,4 @@
 import { useRef, useEffect } from 'react';
-import { useDummyData } from "../../hooks/useDummyData.ts";
 import './NetworkGraph.css';
 
 import { forceX, forceY, forceSimulation, select, drag, pointer, forceCollide, forceManyBody,
@@ -9,9 +8,10 @@ import { forceX, forceY, forceSimulation, select, drag, pointer, forceCollide, f
 
 import type { Simulation } from "d3";
 import type { Link, Node, Group, HubLink } from "../../types/network-graph.types.ts";
+import {useNetworkGraph} from "./NetworkGraphProvider.tsx";
 
 export const NetworkGraph = () => {
-    const data = useDummyData();
+    const { data } = useNetworkGraph();
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -36,6 +36,8 @@ export const NetworkGraph = () => {
 
     // Apply forces for simulation
     useEffect(() => {
+        if (!data) return;
+
         const radius = 40;
         const forceStrength = -100;
         const nodeRadiusMultiplier = 11;
@@ -45,15 +47,19 @@ export const NetworkGraph = () => {
 
         const canvas = canvasRef.current;
         const container = canvas.parentElement;
+
+        const resize = () => {
+            if (!container) return;
+            const rect = container.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+        };
+        resize();
+
         const c = nodeGroupCenters(canvas.width, canvas.height);
-
-        const links : Link[] = [] as Link[];
-        const nodes: Node[] = [] as Node[];
-
-        for (const [key, value] of Object.entries(data)) {
-            links.push(... value.links);
-            nodes.push(... value.nodes);
-        }
+        const links : Link[] = data.links;
+        const nodes: Node[] = data.nodes;
 
         const nodeRelationshipMap = new Map<Node, Set<Node>>()
         nodes.forEach((node) => {
@@ -79,13 +85,7 @@ export const NetworkGraph = () => {
             transparentNodeMap.set(node, 0);
         });
 
-        const resize = () => {
-            if (!container) return;
-            const rect = container.getBoundingClientRect();
-            canvas.width = rect.width;
-            canvas.height = rect.height;
-        };
-        resize();
+
 
         // Hub nodes that serve as the center of each group, determined by size of the node
         const hubs: Record<Group, Node> = {
