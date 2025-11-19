@@ -1,6 +1,6 @@
-import { NetworkGraphProvider } from "../../features/NetworkGraph/NetworkGraphProvider.tsx";
-import { NetworkGraph } from "../../features/NetworkGraph/NetworkGraph.tsx";
-import { NetworkGraphToolbar } from "../../features/NetworkGraph/NetworkGraphToolbar.tsx";
+import { NetworkGraphProvider } from "@/features/NetworkGraph/NetworkGraphContext.tsx";
+import { NetworkGraph } from "@/features/NetworkGraph";
+import { NetworkGraphToolbar } from "@/features/NetworkGraph/NetworkGraphToolbar.tsx";
 
 const Landing = () => {
     return (
