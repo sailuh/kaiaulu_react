@@ -1,5 +1,5 @@
 import "./NetworkGraphToolbar.css";
-import { useNetworkGraph } from "./NetworkGraphContext.tsx";
+import { useNetworkGraph } from "../NetworkGraphContext.tsx";
 
 export const NetworkGraphToolbar = () => {
     const { loadFromFiles } = useNetworkGraph();

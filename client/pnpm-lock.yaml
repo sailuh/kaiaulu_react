@@ -23,6 +23,9 @@ importers:
       react-router-dom:
         specifier: ^7.9.3
         version: 7.9.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+      yaml:
+        specifier: ^2.8.1
+        version: 2.8.1
     devDependencies:
       '@eslint/js':
         specifier: ^9.33.0
@@ -41,7 +44,7 @@ importers:
         version: 19.1.9(@types/react@19.1.12)
       '@vitejs/plugin-react':
         specifier: ^5.0.0
-        version: 5.0.2(vite@7.1.5(@types/node@24.10.1))
+        version: 5.0.2(vite@7.1.5(@types/node@24.10.1)(yaml@2.8.1))
       eslint:
         specifier: ^9.33.0
         version: 9.35.0
@@ -62,7 +65,7 @@ importers:
         version: 8.43.0(eslint@9.35.0)(typescript@5.8.3)
       vite:
         specifier: ^7.1.2
-        version: 7.1.5(@types/node@24.10.1)
+        version: 7.1.5(@types/node@24.10.1)(yaml@2.8.1)
 
 packages:
 
@@ -1402,6 +1405,11 @@ packages:
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
 
+  yaml@2.8.1:
+    resolution: {integrity: sha512-lcYcMxX2PO9XMGvAJkJ3OsNMw+/7FKes7/hgerGUYWIoWu5j/+YQqcZr5JnPZWzOsEBgMbSbiSTn/dv/69Mkpw==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
+
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
@@ -2005,7 +2013,7 @@ snapshots:
       '@typescript-eslint/types': 8.43.0
       eslint-visitor-keys: 4.2.1
 
-  '@vitejs/plugin-react@5.0.2(vite@7.1.5(@types/node@24.10.1))':
+  '@vitejs/plugin-react@5.0.2(vite@7.1.5(@types/node@24.10.1)(yaml@2.8.1))':
     dependencies:
       '@babel/core': 7.28.4
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.28.4)
@@ -2013,7 +2021,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-beta.34
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 7.1.5(@types/node@24.10.1)
+      vite: 7.1.5(@types/node@24.10.1)(yaml@2.8.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -2680,7 +2688,7 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  vite@7.1.5(@types/node@24.10.1):
+  vite@7.1.5(@types/node@24.10.1)(yaml@2.8.1):
     dependencies:
       esbuild: 0.25.9
       fdir: 6.5.0(picomatch@4.0.3)
@@ -2691,6 +2699,7 @@ snapshots:
     optionalDependencies:
       '@types/node': 24.10.1
       fsevents: 2.3.3
+      yaml: 2.8.1
 
   which@2.0.2:
     dependencies:
@@ -2699,5 +2708,7 @@ snapshots:
   word-wrap@1.2.5: {}
 
   yallist@3.1.1: {}
+
+  yaml@2.8.1: {}
 
   yocto-queue@0.1.0: {}

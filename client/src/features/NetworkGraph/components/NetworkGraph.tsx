@@ -1,15 +1,15 @@
 import { useRef } from 'react';
 import './NetworkGraph.css';
-import { useNetworkGraph } from "./NetworkGraphContext.tsx";
-import {useNetworkGraphSimulation} from "@/hooks/NetworkGraph/useNetworkGraphSimulation.ts";
-import {useNetworkGraphInteractions} from "@/hooks/NetworkGraph/useNetworkGraphInteractions.ts";
+import { useNetworkGraph } from "../NetworkGraphContext.tsx";
+import { useNetworkGraphSimulation } from "@/features/NetworkGraph/hooks/useNetworkGraphSimulation.ts";
+import { useNetworkGraphInteractions } from "@/features/NetworkGraph/hooks/useNetworkGraphInteractions.ts";
 
 export const NetworkGraph = () => {
     const { data } = useNetworkGraph();
+
     const { nodes, links } = data ?? { nodes: [], links: [] };
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
-
     useNetworkGraphSimulation({ nodes, links, canvasRef });
     useNetworkGraphInteractions({ nodes, links, canvasRef });
 
