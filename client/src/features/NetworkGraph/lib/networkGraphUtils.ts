@@ -21,18 +21,45 @@ export function updateTransparency(
 ){
     if (!hasPos(hitNode)) return;
 
-    const isTransparent = transparentNodeMap.get(hitNode.id);
+    const current = transparentNodeMap.get(hitNode.id) ?? 0;
 
-    if (isTransparent === 0) {
+    // Are we currently in "normal" mode? (everything opaque)
+    const allOpaque = Array.from(transparentNodeMap.values()).every(v => v === 0);
+
+    const highlightNeighborhood = () => {
+        // fade everything
         for (const key of transparentNodeMap.keys()) {
             transparentNodeMap.set(key, 1);
         }
-        transparentNodeMap.set(hitNode.id, 0);
 
+        // make hit node + its related nodes opaque
         const relatedNodeSet = nodeRelationshipMap.get(hitNode.id);
+        transparentNodeMap.set(hitNode.id, 0);
         relatedNodeSet?.forEach(nodeId => {
             transparentNodeMap.set(nodeId, 0);
         });
+    };
+
+    const clearAll = () => {
+        for (const key of transparentNodeMap.keys()) {
+            transparentNodeMap.set(key, 0);
+        }
+    };
+
+    if (allOpaque) {
+        // First time: go into "highlight" mode
+        highlightNeighborhood();
+        return;
+    }
+
+    // We're already in highlight mode (some nodes have value 1)
+
+    if (current === 0) {
+        // Clicked *inside* the highlighted group → reset to fully opaque
+        clearAll();
+    } else {
+        // Clicked on a faded node → switch highlight to this node's group instead
+        highlightNeighborhood();
     }
 }
 
@@ -96,8 +123,8 @@ export function buildRelationshipMap(nodes: Node[], links: Link[]) {
         const set = new Set<Node["id"]>();
 
         links.forEach((link) => {
-            const sourceId = isNode(link.source) ? link.source.id : link.source;
-            const targetId = isNode(link.target) ? link.target.id : link.target;
+            const sourceId = link.source.id;
+            const targetId = link.target.id;
 
             if (sourceId === node.id) set.add(targetId);
             else if (targetId === node.id) set.add(sourceId);
@@ -165,10 +192,6 @@ const drawNodeByGroup = (
     context.restore();
 };
 
-function isNode(v: Link["source"]): v is Node {
-    return typeof v === "object" && v !== null;
-}
-
 function hasPos(n: Node): n is Node & { x: number; y: number } {
     return n.x != null && n.y != null;
 }
@@ -187,13 +210,12 @@ export function drawGraph (
     context.strokeStyle = "grey";
 
     links.forEach((link) => {
-        if (!isNode(link.source) || !isNode(link.target)) return;
-
         const s = link.source;
         const t = link.target;
-        if (!hasPos(s) || !hasPos(t)) return;
 
         context.beginPath();
+        if (isNullOrUndefined(s.x) && isNullOrUndefined(s.y)) return;
+
         context.moveTo(s.x, s.y);
         context.lineTo(t.x, t.y);
         context.stroke();
@@ -218,6 +240,10 @@ export function findNodeAt(nodes: Node[], nodeRadiusMultiplier: number, x: numbe
         if (dx*dx + dy*dy <= r*r) return n;
     }
     return undefined;
+}
+
+function isNullOrUndefined<T>(value: T | null | undefined): value is null | undefined  {
+    return value == null;
 }
 
 export function clearForces(sim: Simulation<Node, Link>) {

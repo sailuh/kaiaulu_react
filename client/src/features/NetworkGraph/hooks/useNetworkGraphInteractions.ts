@@ -42,6 +42,7 @@ export function useNetworkGraphInteractions(
         const handleDblClick = (event: MouseEvent) => {
             const [x, y] = pointer(event, canvas);
             const hit = findNodeAt(nodes, nodeRadiusMultiplier, x, y,);
+
             if (hit) {
                 updateTransparency(hit, transparentNodeMap, nodeRelationshipMap);
                 drawGraph(context, canvas, nodes, links, transparentNodeMap, nodeRadiusMultiplier);

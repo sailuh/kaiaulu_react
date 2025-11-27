@@ -10,6 +10,7 @@ export const NetworkGraph = () => {
     const { nodes, links } = data ?? { nodes: [], links: [] };
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
+
     useNetworkGraphSimulation({ nodes, links, canvasRef });
     useNetworkGraphInteractions({ nodes, links, canvasRef });
 
@@ -20,18 +21,6 @@ export const NetworkGraph = () => {
                 height: "100%",
             }}>
             <canvas id={"graphCanvas"} ref={canvasRef}/>
-
-            {/*{popup && (<div  style={{*/}
-            {/*    color: "black",*/}
-            {/*    backgroundColor: "darkgrey",*/}
-            {/*    border: "2px",*/}
-            {/*    position: "absolute",*/}
-            {/*    left: popup.x,*/}
-            {/*    top: popup.y,*/}
-            {/*    transform: "translate(-50%, -110%)", // center above node*/}
-            {/*    zIndex: 10,*/}
-            {/*    pointerEvents: "auto",*/}
-            {/*}}> Heres a popup</div>)}*/}
 
         </div>
     )
