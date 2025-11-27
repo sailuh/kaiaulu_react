@@ -1,8 +1,10 @@
 import { useRef } from 'react';
 import './NetworkGraph.css';
+import { DndContext } from '@dnd-kit/core';
 import { useNetworkGraph } from "../NetworkGraphContext.tsx";
 import { useNetworkGraphSimulation } from "@/features/NetworkGraph/hooks/useNetworkGraphSimulation.ts";
 import { useNetworkGraphInteractions } from "@/features/NetworkGraph/hooks/useNetworkGraphInteractions.ts";
+import {FloatingPanel} from "@/components/ui/FloatingOverlay/FloatingOverlay.tsx";
 
 export const NetworkGraph = () => {
     const { data } = useNetworkGraph();
@@ -15,13 +17,19 @@ export const NetworkGraph = () => {
     useNetworkGraphInteractions({ nodes, links, canvasRef });
 
     return (
-        <div className="graph-container" style={{
+        <DndContext>
+            <div
+                className="graph-container" style={{
                 position: "relative",
                 width: "100%",
                 height: "100%",
             }}>
-            <canvas id={"graphCanvas"} ref={canvasRef}/>
+                <canvas id={"graphCanvas"} ref={canvasRef}/>
 
-        </div>
+                {}
+                <FloatingPanel id="subgraphOverlay" title="Node details">
+                </FloatingPanel>
+            </div>
+        </DndContext>
     )
 }
