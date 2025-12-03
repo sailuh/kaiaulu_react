@@ -1,6 +1,6 @@
 import { type ReactNode, createContext, useContext } from 'react';
 import { type NetworkGraphData } from '@/types/network-graph.types.ts';
-import {useJsonFiles} from "@/features/NetworkGraph/hooks/useNetworkGraphJsonData.ts";
+import {useGraphJsonFiles} from "@/features/NetworkGraph/hooks/useNetworkGraphJsonData.ts";
 
 const NetworkGraphContext = createContext<NetworkGraphContextValue | null>(null);
 
@@ -19,7 +19,7 @@ export function useNetworkGraph() {
 }
 
 export function NetworkGraphProvider({ children }: { children: ReactNode }) {
-    const data  = useJsonFiles();
+    const data  = useGraphJsonFiles();
 
 
 

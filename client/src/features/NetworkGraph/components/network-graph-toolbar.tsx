@@ -1,4 +1,4 @@
-import "./NetworkGraphToolbar.css";
+import "./network-graph-toolbar.css";
 
 export const NetworkGraphToolbar = () => {
 

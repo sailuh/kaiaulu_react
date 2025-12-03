@@ -2,7 +2,7 @@ import { useEffect, type RefObject } from "react";
 import { forceSimulation, forceLink, forceX, forceY, forceCollide, forceManyBody } from "d3";
 import type { Simulation } from "d3";
 import type { Node, Link, HubLink } from "@/types/network-graph.types.ts"
-import { nodeGroupCenters, buildHubs, buildHubLinks, clearForces } from "@/features/NetworkGraph/lib/networkGraphUtils.ts";
+import { nodeGroupCenters, buildHubs, buildHubLinks, clearForces } from "@/features/NetworkGraph/lib/network-graph-utils.ts";
 
 interface UseNetworkGraphSimulationArgs {
     nodes: Node[];

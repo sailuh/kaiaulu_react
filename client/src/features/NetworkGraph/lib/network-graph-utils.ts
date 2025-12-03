@@ -1,5 +1,6 @@
 import type {Group, Link, Node} from "@/types/network-graph.types.ts";
 import {drag, pointer, type Simulation} from "d3";
+import type {Dispatch, SetStateAction} from "react";
 
 export const nodeGroupCenters = (w: number, h: number) => ({
     people: [w * 0.5, h * 0.4],
@@ -14,10 +15,11 @@ export function buildInitialTransparencyMap(nodes: Node[]) {
     return map;
 }
 
-export function updateTransparency(
+export function highlightSubgraph(
     hitNode: Node,
     transparentNodeMap: Map<Node["id"], number>,
-    nodeRelationshipMap: Map<Node["id"], Set<Node["id"]>>
+    nodeRelationshipMap: Map<Node["id"], Set<Node["id"]>>,
+    setOverlayOn: Dispatch<SetStateAction<boolean>>
 ){
     if (!hasPos(hitNode)) return;
 
@@ -38,6 +40,8 @@ export function updateTransparency(
         relatedNodeSet?.forEach(nodeId => {
             transparentNodeMap.set(nodeId, 0);
         });
+
+        setOverlayOn(true);
     };
 
     const clearAll = () => {
@@ -57,6 +61,7 @@ export function updateTransparency(
     if (current === 0) {
         // Clicked *inside* the highlighted group → reset to fully opaque
         clearAll();
+        setOverlayOn(false);
     } else {
         // Clicked on a faded node → switch highlight to this node's group instead
         highlightNeighborhood();
@@ -170,10 +175,13 @@ const drawNodeByGroup = (
     }
 
     context.beginPath();
-    context.moveTo(node.x, node.y);
     context.arc(node.x, node.y, node.value * nodeRadiusMultiplier, 0, 2 * Math.PI);
     context.fill();
 
+    // Outline
+    context.lineWidth = 1;
+    context.strokeStyle = "#222"; // or per-group if you want
+    context.stroke();
 
     // Set text attributes
     const px = Math.round(Math.max(10, Math.min(24, node.value * nodeRadiusMultiplier * 0.6)));
@@ -196,6 +204,37 @@ function hasPos(n: Node): n is Node & { x: number; y: number } {
     return n.x != null && n.y != null;
 }
 
+function drawArrow(
+    ctx: CanvasRenderingContext2D,
+    fromX: number,
+    fromY: number,
+    toX: number,
+    toY: number,
+    headLength = 10
+) {
+    const dx = toX - fromX;
+    const dy = toY - fromY;
+    const angle = Math.atan2(dy, dx);
+
+    ctx.beginPath();
+    ctx.moveTo(fromX, fromY);
+    ctx.lineTo(toX, toY);
+    ctx.stroke();
+
+    // Arrowhead
+    ctx.beginPath();
+    ctx.moveTo(toX, toY);
+    ctx.lineTo(
+        toX - headLength * Math.cos(angle - Math.PI / 6),
+        toY - headLength * Math.sin(angle - Math.PI / 6)
+    );
+    ctx.lineTo(
+        toX - headLength * Math.cos(angle + Math.PI / 6),
+        toY - headLength * Math.sin(angle + Math.PI / 6)
+    );
+    ctx.closePath();
+    ctx.fill();
+}
 
 export function drawGraph (
     context: CanvasRenderingContext2D,
@@ -213,12 +252,26 @@ export function drawGraph (
         const s = link.source;
         const t = link.target;
 
-        context.beginPath();
         if (isNullOrUndefined(s.x) && isNullOrUndefined(s.y)) return;
 
-        context.moveTo(s.x, s.y);
-        context.lineTo(t.x, t.y);
-        context.stroke();
+        const dx = t.x - s.x;
+        const dy = t.y - s.y;
+        const len = Math.hypot(dx, dy);
+        if (len === 0) return;
+
+        const ux = dx / len;
+        const uy = dy / len;
+
+        const rSource = s.value * nodeRadiusMultiplier;
+        const rTarget = t.value * nodeRadiusMultiplier;
+        const headLength = 10;
+
+        const fromX = s.x + ux * rSource;
+        const fromY = s.y + uy * rSource;
+        const toX = t.x - ux * (rTarget + headLength * 0.5);
+        const toY = t.y - uy * (rTarget + headLength * 0.5);
+
+        drawArrow(context, fromX, fromY, toX, toY, headLength);
     });
 
     nodes.forEach((node) => {

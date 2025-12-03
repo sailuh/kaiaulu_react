@@ -4,7 +4,7 @@ import type {NetworkGraphData} from "@/types/network-graph.types.ts";
 
 const GRAPH_FILES = ['file-graph-data.json', 'issue-graph-data.json', 'mail-graph-data.json', 'person-graph-data.json'];
 
-export function useJsonFiles(){
+export function useGraphJsonFiles(){
     const [graphData, setGraphData] = useState<NetworkGraphData>({ nodes: [], links: [] });
 
     useEffect(() => {

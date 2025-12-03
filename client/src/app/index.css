@@ -3,6 +3,6 @@ html, body, #root {
 }
 
 html, body {
-    margin: 0;          /* kills the 8px white border */
+    margin: 0;
     padding: 0;
 }

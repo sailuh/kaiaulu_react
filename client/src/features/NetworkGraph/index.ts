@@ -1,1 +1,1 @@
-export { NetworkGraph } from './components/NetworkGraph.tsx';
+export { NetworkGraph } from './components/network-graph.tsx';

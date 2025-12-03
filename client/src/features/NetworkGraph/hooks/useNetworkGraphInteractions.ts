@@ -1,15 +1,15 @@
-import { useEffect, type RefObject } from "react";
+import {useEffect, type RefObject, type SetStateAction, type Dispatch } from "react";
 import { type Link, type Node } from "@/types/network-graph.types.ts"
 import {
     buildInitialTransparencyMap,
     buildRelationshipMap,
     createDragBehavior,
-    drawGraph, findNodeAt, updateTransparency
-} from "@/features/NetworkGraph/lib/networkGraphUtils.ts";
+    drawGraph, findNodeAt, highlightSubgraph
+} from "@/features/NetworkGraph/lib/network-graph-utils.ts";
 import {type DragBehavior, pointer, select} from "d3";
 
 export function useNetworkGraphInteractions(
-    { nodes, links, canvasRef }: { nodes: Node[]; links: Link[]; canvasRef: RefObject<HTMLCanvasElement | null>}
+    { nodes, links, canvasRef, setOverlayOn }: { nodes: Node[]; links: Link[]; canvasRef: RefObject<HTMLCanvasElement | null>; setOverlayOn: Dispatch<SetStateAction<boolean>> }
 ) {
 
     useEffect(() => {
@@ -44,7 +44,7 @@ export function useNetworkGraphInteractions(
             const hit = findNodeAt(nodes, nodeRadiusMultiplier, x, y,);
 
             if (hit) {
-                updateTransparency(hit, transparentNodeMap, nodeRelationshipMap);
+                highlightSubgraph(hit, transparentNodeMap, nodeRelationshipMap, setOverlayOn);
                 drawGraph(context, canvas, nodes, links, transparentNodeMap, nodeRadiusMultiplier);
             }
         };
@@ -59,5 +59,5 @@ export function useNetworkGraphInteractions(
             ro.disconnect();
             select(canvas).on(".drag", null).on("dblclick", null);
         };
-    }, [nodes, links, canvasRef]);
+    }, [nodes, links, canvasRef, setOverlayOn]);
 }

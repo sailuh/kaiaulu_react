@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
-import { Header } from "../ui/Header";
-import "./AppLayout.css";
+import { Header } from "../ui/header";
+import "./app-layout.css";
 
 const AppLayout = () => {
     return (
