@@ -1,24 +1,17 @@
-import * as React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { queryConfig } from '../lib/react-query.ts';
+import { Suspense, type ReactNode } from 'react';
 
 type AppProviderProps = {
-    children: React.ReactNode;
+    children: ReactNode;
 };
 
-export const AppProvider = ({ children }: AppProviderProps) => {
-    const [queryClient] = React.useState(
-        () =>
-            new QueryClient({
-                defaultOptions: queryConfig,
-            }),
-    );
 
+/**
+ *  Provider for entire application.
+*/
+export const AppProvider = ({ children }: AppProviderProps) => {
     return (
-        <React.Suspense>
-            <QueryClientProvider client={queryClient}>
+        <Suspense>
                 {children}
-            </QueryClientProvider>
-        </React.Suspense>
+        </Suspense>
     );
 }

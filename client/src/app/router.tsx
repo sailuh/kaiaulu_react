@@ -2,7 +2,9 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { paths } from '../config/paths.ts';
 import AppLayout from "../components/layouts/app-layout.tsx";
 
-
+/**
+ * Holds the routes (url + page) of the app
+ */
 const router = createBrowserRouter([
     {
         element: <AppLayout />,
