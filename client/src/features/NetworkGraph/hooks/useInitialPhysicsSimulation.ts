@@ -7,6 +7,7 @@ interface UseNetworkGraphSimulationArgs {
     nodes: Node[];
     links: Link[];
     canvasRef: RefObject<HTMLCanvasElement | null>;
+    drawToCanvas: () => void
 }
 
 type NodeGroupCenters = {
@@ -23,7 +24,7 @@ type NodeGroupCenters = {
  *  - D3.js force simulation is used to calculate the positions of all nodes and links
  *  - Nodes and link objects are mutated by D3.js force simulation to contain position values x and y
  */
-export function useNetworkGraphSimulation({ nodes, links, canvasRef }: UseNetworkGraphSimulationArgs) {
+export function useInitialPhysicsSimulation({ nodes, links, canvasRef, drawToCanvas }: UseNetworkGraphSimulationArgs) {
     useEffect(() => {
         if (!canvasRef.current) return;
         if (!nodes.length || !links.length) return;
@@ -52,18 +53,15 @@ export function useNetworkGraphSimulation({ nodes, links, canvasRef }: UseNetwor
         clearForces(sim as Simulation<Node, Link>);
         sim.stop();
 
-        return () => {
-            clearForces(sim as Simulation<Node, Link>);
-            sim.stop();
-        };
-    }, [nodes, links, canvasRef]);
+        drawToCanvas();
+    }, [nodes, links, canvasRef, drawToCanvas]);
 }
 
 function calculateNodeGroupCenters(canvasWidth: number, canvasHeight: number): NodeGroupCenters {
     return {
-        people: [canvasWidth * 0.5, canvasHeight * 0.4],
-        mail:   [canvasWidth * 0.8, canvasHeight * 0.3],
-        file:   [canvasWidth * 0.25, canvasHeight * 0.4],
+        people: [canvasWidth * 0.5, canvasHeight * 0.5],
+        mail:   [canvasWidth * 0.8, canvasHeight * 0.4],
+        file:   [canvasWidth * 0.25, canvasHeight * 0.5],
         issue:  [canvasWidth * 0.8, canvasHeight * 0.6],
     }
 }

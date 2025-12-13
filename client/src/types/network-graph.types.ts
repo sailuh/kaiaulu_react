@@ -1,4 +1,3 @@
-
 import type { SimulationNodeDatum, SimulationLinkDatum } from "d3";
 
 export interface Node extends SimulationNodeDatum {
@@ -26,3 +25,7 @@ export type Group = 'people' | 'mail' | 'file' | 'issue';
 export type HubLink = {
     source: Node; target: Node
 };
+
+export type NodeRelationshipMap = Map<string, Set<string>>;
+
+export type TransparentNodeMap = Map<string, number>;

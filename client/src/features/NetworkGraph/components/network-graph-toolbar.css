@@ -1,8 +1,0 @@
-#networkGraphToolbar {
-    color: black;
-    display: flex;
-    flex-direction: row;
-    flex: 0 0 10%;
-    justify-content: center;
-    overflow: auto;
-}

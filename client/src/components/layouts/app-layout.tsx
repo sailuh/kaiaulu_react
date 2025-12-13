@@ -1,16 +1,31 @@
 import { Outlet } from "react-router-dom";
-import { Header } from "../ui/header";
-import "./app-layout.css";
+import Box from "@mui/material/Box";
 
 /**
  *  Provides current layout for the application. Renders the header above any child components passed to it.
  */
 const AppLayout = () => {
     return (
-        <div id={"appContainer"}>
-            <Header />
-            <Outlet />
-        </div>
+        <Box
+            sx={{
+                height: '100vh',            // exactly viewport height
+                display: 'flex',
+                flexDirection: 'column',
+                bgcolor: 'background.default',
+            }}
+        >
+            <Box
+                component="main"
+                sx={{
+                    flex: 1,
+                    minHeight: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+            >
+                <Outlet />
+            </Box>
+        </Box>
     )
 }
 

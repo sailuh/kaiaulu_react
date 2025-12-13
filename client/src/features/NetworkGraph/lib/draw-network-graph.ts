@@ -3,17 +3,20 @@ import { isNullOrUndefined } from "@/utils/type-guards.ts";
 import type {Dispatch, SetStateAction} from "react";
 
 export function drawGraph(
-    context: CanvasRenderingContext2D,
     canvas: HTMLCanvasElement,
     nodes: Node[],
     links: Link[],
     transparentNodeMap: Map<string, number>,
-    nodeRadiusMultiplier: number)
+    nodeRadiusMultiplier: number,
+    linkColor: string,
+    nodeOutlineColor: string,)
 {
+    const context = canvas.getContext("2d");
+    if (!context) return;
 
     context.clearRect(0, 0, canvas.width, canvas.height);
-
-    context.strokeStyle = "grey";
+    context.strokeStyle = linkColor;
+    context.fillStyle = linkColor;
 
     links.forEach((link) => {
         const s = link.source;
@@ -42,7 +45,7 @@ export function drawGraph(
     });
 
     nodes.forEach((node) => {
-        drawNodeByGroup(node, context, transparentNodeMap, nodeRadiusMultiplier);
+        drawNodeByGroup(node, context, transparentNodeMap, nodeRadiusMultiplier, nodeOutlineColor);
     })
 
 }
@@ -54,7 +57,8 @@ function drawNodeByGroup(
     node: Node,
     context: CanvasRenderingContext2D,
     transparentNodeMap: Map<string, number>,
-    nodeRadiusMultiplier: number) {
+    nodeRadiusMultiplier: number,
+    nodeOutlineColor: string) {
 
     // Sets color of node according to group
     switch (node.group) {
@@ -87,7 +91,7 @@ function drawNodeByGroup(
 
     // Outline
     context.lineWidth = 1;
-    context.strokeStyle = "#222"; // or per-group if you want
+    context.strokeStyle = nodeOutlineColor;
     context.stroke();
 
     // Set text attributes
@@ -143,13 +147,13 @@ function drawArrow(
  * Helper function for highlighting subgraph
  */
 export function highlightSubgraph(
-    hitNode: Node,
+    hitNodeId: string,
     transparentNodeMap: Map<Node["id"], number>,
     nodeRelationshipMap: Map<Node["id"], Set<Node["id"]>>,
-    setOverlayOn: Dispatch<SetStateAction<boolean>>
+    setOverlayOn: Dispatch<SetStateAction<boolean>>,
 ){
 
-    const current = transparentNodeMap.get(hitNode.id) ?? 0;
+    const current = transparentNodeMap.get(hitNodeId) ?? 0;
 
     // Are we currently in "normal" mode? (everything opaque)
     const allOpaque = Array.from(transparentNodeMap.values()).every(v => v === 0);
@@ -161,8 +165,8 @@ export function highlightSubgraph(
         }
 
         // make hit node + its related nodes opaque
-        const relatedNodeSet = nodeRelationshipMap.get(hitNode.id);
-        transparentNodeMap.set(hitNode.id, 0);
+        const relatedNodeSet = nodeRelationshipMap.get(hitNodeId);
+        transparentNodeMap.set(hitNodeId, 0);
         relatedNodeSet?.forEach(nodeId => {
             transparentNodeMap.set(nodeId, 0);
         });
@@ -192,4 +196,31 @@ export function highlightSubgraph(
         // Clicked on a faded node → switch highlight to this node's group instead
         highlightNeighborhood();
     }
+}
+
+
+export function buildInitialTransparencyMap(nodes: Node[]) {
+    const map = new Map<Node["id"], number>();
+    nodes.forEach(n => map.set(n.id, 0));
+    return map;
+}
+
+export function buildRelationshipMap(nodes: Node[], links: Link[]) {
+    const map = new Map<Node["id"], Set<Node["id"]>>();
+
+    nodes.forEach((node) => {
+        const set = new Set<Node["id"]>();
+
+        links.forEach((link) => {
+            const sourceId = link.source.id;
+            const targetId = link.target.id;
+
+            if (sourceId === node.id) set.add(targetId);
+            else if (targetId === node.id) set.add(sourceId);
+        });
+
+        map.set(node.id, set);
+    });
+
+    return map;
 }

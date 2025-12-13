@@ -1,11 +1,27 @@
-import { type ReactNode, createContext, useContext } from 'react';
-import { type NetworkGraphData } from '@/types/network-graph.types.ts';
-import {useNetworkGraphData} from "@/features/NetworkGraph/hooks/useNetworkGraphData.ts";
+import {
+    type ReactNode,
+    createContext,
+    useContext,
+    useState,
+    type Dispatch,
+    type SetStateAction,
+    useRef,
+    type RefObject, useEffect
+} from 'react';
+import type { Node, Link } from "@/types/network-graph.types.ts"
+import { useNetworkGraphData } from "@/features/NetworkGraph/hooks/useNetworkGraphData.ts";
+import { buildInitialTransparencyMap, buildRelationshipMap } from "@/features/NetworkGraph/lib/draw-network-graph.ts";
 
 const NetworkGraphContext = createContext<NetworkGraphContextValue | null>(null);
 
 interface NetworkGraphContextValue {
-    data: NetworkGraphData;
+    nodes: Node[];
+    links: Link[];
+    canvasRef: RefObject<HTMLCanvasElement | null>
+    overlayOn: boolean;
+    setOverlayOn: Dispatch<SetStateAction<boolean>>;
+    nodeRelationshipMapRef: RefObject<Map<string, Set<string>>>;
+    transparentNodeMapRef: RefObject<Map<string, number>>;
 }
 
 /**
@@ -27,10 +43,28 @@ export function useNetworkGraph() {
  *  Calls useGraphJsonFiles to load and provide the .json data for the Network Graph.
  */
 export function NetworkGraphProvider({ children }: { children: ReactNode }) {
-    const data  = useNetworkGraphData();
+    const { nodes, links }  = useNetworkGraphData();
+
+    useEffect(() => {
+        nodeRelationshipMapRef.current = buildRelationshipMap(nodes, links);
+        transparentNodeMapRef.current = buildInitialTransparencyMap(nodes);
+    }, [nodes, links]);
+
+    const transparentNodeMapRef = useRef<Map<string, number>>(new Map());
+    const nodeRelationshipMapRef = useRef<Map<string, Set<string>>>(new Map());
+
+    const [ overlayOn, setOverlayOn ] = useState<boolean>(false);
+
+    const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const value: NetworkGraphContextValue = {
-        data
+        nodes,
+        links,
+        canvasRef,
+        overlayOn,
+        setOverlayOn,
+        nodeRelationshipMapRef,
+        transparentNodeMapRef
     };
 
     return (

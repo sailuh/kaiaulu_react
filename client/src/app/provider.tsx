@@ -1,4 +1,6 @@
 import { Suspense, type ReactNode } from 'react';
+import { ThemeProvider } from "@mui/material";
+import { theme } from "@/styles/theme.ts";
 
 type AppProviderProps = {
     children: ReactNode;
@@ -11,7 +13,9 @@ type AppProviderProps = {
 export const AppProvider = ({ children }: AppProviderProps) => {
     return (
         <Suspense>
+            <ThemeProvider theme={theme}>
                 {children}
+            </ThemeProvider>
         </Suspense>
     );
 }
