@@ -8,13 +8,30 @@ import { buildInitialTransparencyMap, buildRelationshipMap } from "@/features/Ne
 
 const NetworkGraphContext = createContext<NetworkGraphContextValue | null>(null);
 
+
+/**
+ *  This data is exposed to the children of the NetworkGraphProvider. It acts as a central source of truth for the Network Graph components.
+ */
 interface NetworkGraphContextValue {
+    // Array of d3.js node objects that have been extended with additional properties
     nodes: Node[];
+
+    // Array of d3.js link objects that have been extended with additional properties
     links: Link[];
+
+    // Reference object to HTML Canvas upon which the Network Graph will be drawn, survives React DOM re-renders
     canvasRef: RefObject<HTMLCanvasElement | null>
+
+    // Current highlight state, is determined by whether or whether not the subgraph overlay is active
     overlayOn: boolean;
+
+    // Function to set the current highlight state
     setOverlayOn: Dispatch<SetStateAction<boolean>>;
+
+    // Reference object to a map with each node's id as a key, and a set of their related nodes as values, survives React DOM re-renders
     nodeRelationshipMapRef: RefObject<Map<string, Set<string>>>;
+
+    // Reference object to a map with each node's id as a key, and a number representing their current transparency (1 for transparent, 0 for opaque), survives React DOM re-renders
     transparentNodeMapRef: RefObject<Map<string, number>>;
 }
 

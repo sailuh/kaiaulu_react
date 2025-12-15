@@ -34,7 +34,7 @@ export const Navbar = ({ children }: { children: ReactNode }) => {
                             fontSize: '1.25rem',
                         }}
                     >
-                        Projects
+                        Kaiāulu
                     </Typography>
 
                     { children }

@@ -1,4 +1,11 @@
 /**
+ *  THIS FILE CONTAINS HELPER FUNCTIONS FOR MANIPULATING THE TRANSPARENT NODE MAP.
+ */
+
+
+
+
+/**
  * Helper function that sets a target node and its related nodes transparency values to be opaque
  */
 export function setNodeNeighborhoodToBeOpaque(hitNodeId: string,

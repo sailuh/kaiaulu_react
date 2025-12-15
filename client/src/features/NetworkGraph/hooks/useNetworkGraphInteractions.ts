@@ -10,11 +10,11 @@ import {useNetworkGraph} from "@/features/NetworkGraph/stores/network-graph-cont
 
 /**
  *  Allows a network graph that is rendered to a canvas to become interactable to the user.
+ *  It creates the listeners for user interaction and also runs the logic for each listener.
  *
- *  Contains logic for the following user interactions:
+ *  Currently supported user interactions
  *  - Double-click detection
  *  - Drag detection
- *  - Redraws network graph whenever canvas size changes (user resizes window, user opens browser console, etc.)
  */
 export function useNetworkGraphInteractions(renderNetworkGraph: () => void)  {
 
@@ -48,8 +48,8 @@ export function useNetworkGraphInteractions(renderNetworkGraph: () => void)  {
          *
          * Flow:
          * 1. Whenever the canvas is double-clicked, check the position of the mouse pointer.
-         * 2. If the mouse pointer is over a node, then trigger the highlight logic.
-         * 3. After running the highlight logic, redraw the network graph.
+         * 2. If the mouse pointer is over a node, then target that node and its related nodes according to the relationship map
+         * 3. Update transparency values depending on current highlight state (is the overlay enabled? or is it disabled)
          */
         const handleDblClick = (event: MouseEvent) => {
             const [x, y] = pointer(event, canvas);
@@ -77,11 +77,16 @@ export function useNetworkGraphInteractions(renderNetworkGraph: () => void)  {
     }, [nodes, links, canvasRef, setOverlayOn, transparentNodeMapRef, nodeRelationshipMapRef, overlayOn, renderNetworkGraph ]);
 }
 
+/**
+ *  Helper function that creates a D3.js drag behavior
+ *  - Updates node position to position of pointer while the node is being dragged
+ *  - Renders the graph with each tick of a drag
+ */
 function createDragBehavior(
     canvas: HTMLCanvasElement,
     nodes: Node[],
     nodeRadiusMultiplier: number,
-    requestDraw: () => void) {
+    renderNetworkGraph: () => void) {
 
     return drag<HTMLCanvasElement, unknown>()
         .subject((event) => {
@@ -101,13 +106,14 @@ function createDragBehavior(
             const n = event.subject;
             n.x = event.x;
             n.y = event.y;
-            requestDraw();
+            renderNetworkGraph();
         });
 }
 
 
-
-// Finds the topmost node under (x,y)
+/**
+ *  Helper function that finds the topmost node under (x,y)
+ */
 function findNodeAt(nodes: Node[], nodeRadiusMultiplier: number, x: number, y: number) {
     for (let i = nodes.length - 1; i >= 0; i--) {
         const n = nodes[i];

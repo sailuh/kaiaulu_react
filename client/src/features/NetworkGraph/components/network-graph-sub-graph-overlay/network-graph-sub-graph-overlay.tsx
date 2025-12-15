@@ -9,6 +9,7 @@ import {Button, Container, Typography} from "@mui/material";
  *
  *  Note:
  *  - Uses custom FloatingPanel component
+ *  - Uses DndContext, necessary for components created with dnd-kit to have drag functionality
  */
 export const NetworkGraphSubGraphOverlay = () => {
     const { overlayOn } = useNetworkGraph();
@@ -16,7 +17,6 @@ export const NetworkGraphSubGraphOverlay = () => {
     if (!overlayOn) return null;
 
     return (
-        // Any draggable components created with dnd-kit must be rendered within a DndContext
         <DndContext>
             <FloatingPanel id="subgraphOverlay" title="Subgraph Details">
                 <Container>

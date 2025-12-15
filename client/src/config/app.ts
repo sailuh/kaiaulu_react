@@ -1,6 +1,11 @@
 import { parse } from 'yaml';
 import rawConfig from './user.config.yaml?raw';
 
+/**
+ *  THIS FILE CONVERTS THE USER DEFINEd PATHS IN THE KAIAULU CONFIG INTO CONSTANTS USED BY THE APPLICATION
+ */
+
+
 const config = parse(rawConfig) as {
     networkGraph: {
         projectsDirectory: string,

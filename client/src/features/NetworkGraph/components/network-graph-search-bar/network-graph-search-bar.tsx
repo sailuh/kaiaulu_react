@@ -6,7 +6,9 @@ import {
     setNodeNeighborhoodToBeOpaque
 } from "@/features/NetworkGraph/utils/transparent-node-map.ts";
 
-
+/**
+ * Custom styled Search form that acts as container for the Input
+ */
 const Search = styled("form")(({ theme }) => ({
     position: "relative",
     borderRadius: theme.shape.borderRadius,
@@ -23,7 +25,9 @@ const Search = styled("form")(({ theme }) => ({
     paddingLeft: 10,
 }));
 
-
+/**
+ *  Search bar that allows the user to target a node by name and highlight a subgraph
+ */
 export const NetworkGraphSearchBar = () => {
     const { nodeRelationshipMapRef, transparentNodeMapRef, overlayOn, setOverlayOn } = useNetworkGraph();
 
