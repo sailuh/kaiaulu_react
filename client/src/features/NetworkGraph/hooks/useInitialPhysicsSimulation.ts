@@ -1,14 +1,8 @@
-import { useEffect, type RefObject } from "react";
+import { useEffect } from "react";
 import { forceSimulation, forceLink, forceX, forceY, forceCollide, forceManyBody } from "d3";
 import type { Simulation } from "d3";
-import type { Node, Link, HubLink, Group } from "@/types/network-graph.types.ts"
-
-interface UseNetworkGraphSimulationArgs {
-    nodes: Node[];
-    links: Link[];
-    canvasRef: RefObject<HTMLCanvasElement | null>;
-    drawToCanvas: () => void
-}
+import type { Node, Link, HubLink, Group } from "@/features/NetworkGraph/types/network-graph.types.ts"
+import {useNetworkGraph} from "@/features/NetworkGraph/stores/network-graph-context.tsx";
 
 type NodeGroupCenters = {
     people: [number, number];
@@ -24,7 +18,14 @@ type NodeGroupCenters = {
  *  - D3.js force simulation is used to calculate the positions of all nodes and links
  *  - Nodes and link objects are mutated by D3.js force simulation to contain position values x and y
  */
-export function useInitialPhysicsSimulation({ nodes, links, canvasRef, drawToCanvas }: UseNetworkGraphSimulationArgs) {
+export function useInitialPhysicsSimulation(renderNetworkGraph: () => void) {
+
+    const {
+        nodes,
+        links,
+        canvasRef
+    } = useNetworkGraph();
+
     useEffect(() => {
         if (!canvasRef.current) return;
         if (!nodes.length || !links.length) return;
@@ -53,8 +54,8 @@ export function useInitialPhysicsSimulation({ nodes, links, canvasRef, drawToCan
         clearForces(sim as Simulation<Node, Link>);
         sim.stop();
 
-        drawToCanvas();
-    }, [nodes, links, canvasRef, drawToCanvas]);
+        renderNetworkGraph();
+    }, [nodes, links, canvasRef, renderNetworkGraph]);
 }
 
 function calculateNodeGroupCenters(canvasWidth: number, canvasHeight: number): NodeGroupCenters {

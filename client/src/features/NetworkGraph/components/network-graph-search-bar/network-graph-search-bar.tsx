@@ -10,7 +10,7 @@ import {
 const Search = styled("form")(({ theme }) => ({
     position: "relative",
     borderRadius: theme.shape.borderRadius,
-    backgroundColor: theme.palette.background.default,
+    backgroundColor: theme.palette.secondary.main,
     "&:hover": {
         backgroundColor: alpha(theme.palette.common.white, 0.25),
     },

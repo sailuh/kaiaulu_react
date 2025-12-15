@@ -1,4 +1,4 @@
-import type { Link, Node } from "@/types/network-graph.types.ts";
+import type { Link, Node } from "@/features/NetworkGraph/types/network-graph.types.ts";
 import { isNullOrUndefined } from "@/utils/type-guards.ts";
 import type {Dispatch, SetStateAction} from "react";
 
@@ -60,7 +60,6 @@ function drawNodeByGroup(
     nodeRadiusMultiplier: number,
     nodeOutlineColor: string) {
 
-    // Sets color of node according to group
     switch (node.group) {
         case "people":
             context.fillStyle = 'black';

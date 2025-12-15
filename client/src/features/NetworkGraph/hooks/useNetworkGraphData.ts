@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BASE_PATH } from "@/features/NetworkGraph/config/paths.ts";
 
-import type { NetworkGraphData } from "@/types/network-graph.types.ts";
+import type { NetworkGraphData } from "@/features/NetworkGraph/types/network-graph.types.ts";
 
 const GRAPH_FILES = ['file-graph-data.json', 'issue-graph-data.json', 'mail-graph-data.json', 'person-graph-data.json'];
 

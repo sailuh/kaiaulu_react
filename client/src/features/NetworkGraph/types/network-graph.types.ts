@@ -25,7 +25,3 @@ export type Group = 'people' | 'mail' | 'file' | 'issue';
 export type HubLink = {
     source: Node; target: Node
 };
-
-export type NodeRelationshipMap = Map<string, Set<string>>;
-
-export type TransparentNodeMap = Map<string, number>;

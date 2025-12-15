@@ -1,9 +1,8 @@
-import Paper from "@mui/material/Paper";
 import { CSS } from "@dnd-kit/utilities";
 import { useDraggable, useDndMonitor } from '@dnd-kit/core';
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
 import { useState, type ReactNode, type FC, type CSSProperties } from "react";
+import Box from "@mui/material/Box";
+import { Paper, Typography } from "@mui/material";
 
 type FloatingPanelProps = {
     /**
@@ -58,9 +57,13 @@ export const FloatingPanel: FC<FloatingPanelProps> = ({ title, children, id }) =
     };
 
     return (
-        <Paper ref={setNodeRef} style={style} {...listeners} {...attributes}
+        <Paper ref={setNodeRef}
+               style={style}
+               {...listeners}
+               {...attributes}
                elevation={4}
                sx={{
+                   bgColor: "primary.main",
                    position: "absolute",
                    top: 16,
                    left: 16,
@@ -70,16 +73,17 @@ export const FloatingPanel: FC<FloatingPanelProps> = ({ title, children, id }) =
                }}
         >
             {title && (
-                <DialogTitle
-                    id="floating-panel-title"
-                    sx={{ cursor: "move" }}
-                >
-                    {title}
-                </DialogTitle>
+                <Box sx={{ px: 2, py: 1.5, cursor: "move" }}>
+                    <Typography variant="h6">
+                        {title}
+                    </Typography>
+                </Box>
             )}
 
-            <DialogContent>{children}</DialogContent>
-        </Paper>
+            <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                {children}
+            </Box>
 
+        </Paper>
     );
 };

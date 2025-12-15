@@ -4,10 +4,9 @@ import Toolbar from '@mui/material/Toolbar';
 import IconButton from '@mui/material/IconButton';
 import logo from '@/assets/kaiaulu_logo.png';
 import { Typography } from "@mui/material";
-import { NetworkGraphSearchBar } from "@/features/NetworkGraph/components/network-graph-search-bar.tsx";
+import type { ReactNode } from "react";
 
-export const Navbar = () => {
-
+export const Navbar = ({ children }: { children: ReactNode }) => {
 
     return (
             <AppBar position="static">
@@ -38,7 +37,7 @@ export const Navbar = () => {
                         Projects
                     </Typography>
 
-                    <NetworkGraphSearchBar/>
+                    { children }
                 </Toolbar>
             </AppBar>
     )

@@ -1,14 +1,8 @@
-import {
-    type ReactNode,
-    createContext,
-    useContext,
-    useState,
-    type Dispatch,
-    type SetStateAction,
-    useRef,
+import { type ReactNode, createContext, useContext, useState, type Dispatch, type SetStateAction, useRef,
     type RefObject, useEffect
 } from 'react';
-import type { Node, Link } from "@/types/network-graph.types.ts"
+
+import type { Node, Link } from "@/features/NetworkGraph/types/network-graph.types.ts"
 import { useNetworkGraphData } from "@/features/NetworkGraph/hooks/useNetworkGraphData.ts";
 import { buildInitialTransparencyMap, buildRelationshipMap } from "@/features/NetworkGraph/lib/draw-network-graph.ts";
 

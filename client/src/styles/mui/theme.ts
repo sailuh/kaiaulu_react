@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles';
+import '@fontsource/roboto/300.css';
 
 export const theme = createTheme({
     palette: {
@@ -11,7 +12,6 @@ export const theme = createTheme({
         },
         background: {
             default: '#444444',
-            paper: '#111827',
         },
     },
     components: {

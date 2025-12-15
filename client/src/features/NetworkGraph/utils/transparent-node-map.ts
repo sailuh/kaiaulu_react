@@ -24,3 +24,12 @@ export function setAllNodesToBeTransparent(transparentNodeMap: Map<string, numbe
         transparentNodeMap.set(key, 1);
     }
 }
+
+/**
+ * Helper function that sets all node transparency values to be opaque
+ */
+export function setAllNodesToBeOpaque(transparentNodeMap: Map<string, number>) {
+    for (const key of transparentNodeMap.keys()) {
+        transparentNodeMap.set(key, 0);
+    }
+}

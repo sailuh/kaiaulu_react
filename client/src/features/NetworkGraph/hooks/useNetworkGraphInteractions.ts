@@ -1,18 +1,12 @@
-import { useEffect, type RefObject, type SetStateAction, type Dispatch } from "react";
-import { highlightSubgraph } from "../lib/draw-network-graph.ts";
-import { type Link, type Node , type NodeRelationshipMap, type TransparentNodeMap} from "@/types/network-graph.types.ts"
+import { useEffect } from "react";
+import { type Node } from "@/features/NetworkGraph/types/network-graph.types.ts"
 import { drag, type DragBehavior, pointer, select } from "d3";
-
-interface UseNetworkGraphInteractionsArgs {
-    nodes: Node[];
-    links: Link[];
-    canvasRef: RefObject<HTMLCanvasElement | null>;
-    overlayOn: boolean;
-    setOverlayOn: Dispatch<SetStateAction<boolean>>;
-    nodeRelationshipMap: NodeRelationshipMap;
-    transparentNodeMap: TransparentNodeMap;
-    drawToCanvas: () => void;
-}
+import {
+    setAllNodesToBeOpaque,
+    setAllNodesToBeTransparent,
+    setNodeNeighborhoodToBeOpaque
+} from "@/features/NetworkGraph/utils/transparent-node-map.ts";
+import {useNetworkGraph} from "@/features/NetworkGraph/stores/network-graph-context.tsx";
 
 /**
  *  Allows a network graph that is rendered to a canvas to become interactable to the user.
@@ -22,10 +16,17 @@ interface UseNetworkGraphInteractionsArgs {
  *  - Drag detection
  *  - Redraws network graph whenever canvas size changes (user resizes window, user opens browser console, etc.)
  */
-export function useNetworkGraphInteractions(
-    { nodes, links, canvasRef, overlayOn, setOverlayOn, nodeRelationshipMap, transparentNodeMap, drawToCanvas }
-    : UseNetworkGraphInteractionsArgs
-) {
+export function useNetworkGraphInteractions(renderNetworkGraph: () => void)  {
+
+    const {
+        nodes,
+        links,
+        canvasRef,
+        overlayOn,
+        setOverlayOn,
+        nodeRelationshipMapRef,
+        transparentNodeMapRef,
+    } = useNetworkGraph();
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -37,7 +38,7 @@ export function useNetworkGraphInteractions(
         const nodeRadiusMultiplier = 11;
 
         // Creates drag behavior
-        const dragBehavior = createDragBehavior(canvas, nodes, nodeRadiusMultiplier, drawToCanvas);
+        const dragBehavior = createDragBehavior(canvas, nodes, nodeRadiusMultiplier, renderNetworkGraph);
 
         // Attaches drag behavior to the canvas
         select(canvas).call(dragBehavior as DragBehavior<HTMLCanvasElement, unknown, unknown>);
@@ -55,8 +56,14 @@ export function useNetworkGraphInteractions(
             const hit = findNodeAt(nodes, nodeRadiusMultiplier, x, y,);
 
             if (hit) {
-                highlightSubgraph(hit.id, transparentNodeMap, nodeRelationshipMap, setOverlayOn);
-                drawToCanvas();
+                if (!overlayOn) {
+                    setAllNodesToBeTransparent(transparentNodeMapRef.current);
+                    setNodeNeighborhoodToBeOpaque(hit.id, transparentNodeMapRef.current, nodeRelationshipMapRef.current);
+                    setOverlayOn(true);
+                } else {
+                    setAllNodesToBeOpaque(transparentNodeMapRef.current)
+                    setOverlayOn(false);
+                }
             }
         };
 
@@ -67,7 +74,7 @@ export function useNetworkGraphInteractions(
         return () => {
             select(canvas).on(".drag", null).on("dblclick", null);
         };
-    }, [nodes, links, canvasRef, setOverlayOn, transparentNodeMap, nodeRelationshipMap, drawToCanvas, overlayOn]);
+    }, [nodes, links, canvasRef, setOverlayOn, transparentNodeMapRef, nodeRelationshipMapRef, overlayOn, renderNetworkGraph ]);
 }
 
 function createDragBehavior(

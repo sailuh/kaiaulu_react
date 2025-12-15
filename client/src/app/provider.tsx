@@ -1,6 +1,6 @@
 import { Suspense, type ReactNode } from 'react';
 import { ThemeProvider } from "@mui/material";
-import { theme } from "@/styles/theme.ts";
+import { theme } from "@/styles/mui/theme.ts";
 
 type AppProviderProps = {
     children: ReactNode;
